@@ -434,12 +434,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json({"error": "读取失败"}, 500, head_only=head_only)
         extra = {}
         if ctype == "application/pdf":
-            # 文件名做响应头注入清洗 + RFC 5987 编码
+            # HTTP 头仅允许 latin-1:filename= 用 ASCII 回退名,filename*= 按 RFC 5987 携带真名
             fname = os.path.basename(full)
-            safe = re.sub(r'[\r\n\"\\]+', "_", fname)
+            ascii_name = re.sub(r"[^\w.\-]+", "_", fname.encode("ascii", "ignore").decode("ascii")) or "download.pdf"
             extra["Content-Disposition"] = (
                 "inline; filename=\"%s\"; filename*=UTF-8''%s" %
-                (safe, urllib.parse.quote(fname))
+                (ascii_name, urllib.parse.quote(fname))
             )
         self._send(200, data, ctype, extra, head_only=head_only)
 

@@ -1,0 +1,7 @@
+data/*.json
+data/pdf/*
+data/img/*
+!data/.gitkeep
+verify/
+交付/
+__pycache__/
