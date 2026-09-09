@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>人工智能报道检索平台</title>
+<style>
+  :root{
+    --navy:#16335b; --navy2:#1d447f; --red:#9e1b1b; --red2:#b8272a;
+    --paper:#eef1f6; --card:#ffffff; --ink:#222; --muted:#6b7280;
+    --line:#dfe4ec; --hover:#f3f6fb;
+    --ui-font:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Heiti SC",sans-serif;
+    --art-font:"Songti SC","SimSun","STSong",serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:var(--ui-font);font-size:18px;line-height:1.6;}
+  a{color:var(--navy2);text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* 顶栏 */
+  header.topbar{background:linear-gradient(180deg,var(--navy),var(--navy2));
+    color:#fff;padding:16px 28px;display:flex;align-items:center;
+    justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.18);}
+  .topbar .title{font-size:24px;font-weight:700;letter-spacing:2px;}
+  .topbar .title .seal{color:#e9c46a;margin-right:10px;}
+  .topbar .org{font-size:14px;opacity:.85;}
+
+  /* 主体布局 */
+  #body{display:flex;align-items:flex-start;max-width:1280px;margin:0 auto;padding:18px;}
+  #sidebar{width:264px;flex:0 0 264px;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:10px 8px;margin-right:18px;position:sticky;top:18px;}
+  #main{flex:1 1 auto;min-width:0;}
+
+  /* 侧栏导航 */
+  .nav-title{font-size:15px;color:var(--muted);padding:4px 10px 8px;font-weight:700;
+    border-bottom:2px solid var(--line);margin-bottom:6px;}
+  .cat{margin-bottom:2px;}
+  .cat-head{width:100%;text-align:left;background:none;border:none;padding:10px 10px;
+    font-size:17px;font-weight:700;color:var(--navy);display:flex;justify-content:space-between;
+    align-items:center;border-radius:6px;}
+  .cat-head:hover{background:var(--hover);}
+  .cat-head .arrow{transition:transform .15s;color:var(--muted);font-size:13px;}
+  .cat.open .cat-head .arrow{transform:rotate(90deg);}
+  .sub-list{display:none;padding:2px 0 6px 8px;border-left:2px solid var(--line);margin-left:14px;}
+  .cat.open .sub-list{display:block;}
+  .sub{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 12px;
+    font-size:15px;color:#3a4a63;border-radius:6px;}
+  .sub:hover{background:var(--hover);color:var(--navy2);}
+  .sub.active{background:var(--navy);color:#fff;font-weight:700;}
+
+  /* 检索栏 */
+  .searchbar{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:16px 18px;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .kw{flex:1 1 360px;min-width:240px;padding:12px 14px;font-size:18px;border:2px solid var(--line);
+    border-radius:8px;outline:none;}
+  .kw:focus{border-color:var(--navy2);}
+  .btn{background:var(--navy);color:#fff;border:none;padding:12px 22px;font-size:17px;
+    border-radius:8px;font-weight:700;letter-spacing:1px;}
+  .btn:hover{background:var(--navy2);}
+  .btn-red{background:var(--red);}
+  .btn-red:hover{background:var(--red2);}
+  .btn-ghost{background:#fff;color:var(--navy);border:1px solid var(--line);padding:10px 16px;
+    font-size:15px;border-radius:8px;}
+  .btn-ghost:hover{background:var(--hover);}
+  .filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;font-size:15px;color:#444;}
+  .filters label{display:flex;align-items:center;gap:6px;}
+  .filters select,.filters input[type=date]{padding:7px 8px;font-size:15px;border:1px solid var(--line);
+    border-radius:6px;font-family:inherit;}
+  .filter-tip{font-size:13px;color:var(--muted);margin-left:auto;}
+
+  /* 视图卡片 */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .section-title{font-size:19px;font-weight:700;color:var(--navy);margin:0 0 12px;
+    padding-left:12px;border-left:5px solid var(--red);}
+  .hint{color:var(--muted);font-size:15px;padding:18px 6px;}
+
+  /* 文章列表 */
+  .list-item{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:16px 18px;margin-bottom:12px;transition:border-color .15s,box-shadow .15s;}
+  .list-item:hover{border-color:var(--navy2);box-shadow:0 3px 10px rgba(22,51,91,.10);}
+  .list-item .lt{font-size:19px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+  .list-item .lm{font-size:14px;color:var(--muted);margin-bottom:8px;}
+  .list-item .lm .tag{display:inline-block;background:#eef2f8;color:var(--navy2);
+    border-radius:4px;padding:1px 8px;margin-right:8px;font-size:13px;}
+  .list-item .ls{font-size:15px;color:#444;line-height:1.55;}
+  mark{background:#fff1a8;color:#7a3b00;padding:0 2px;border-radius:2px;}
+
+  /* 详情 */
+  .detail-head{border-bottom:2px solid var(--line);padding-bottom:12px;margin-bottom:14px;}
+  .detail-title{font-family:var(--art-font);font-size:27px;font-weight:700;color:#1a1a1a;
+    line-height:1.4;margin:0 0 10px;}
+  .detail-meta{font-size:14px;color:var(--muted);}
+  .detail-meta span{margin-right:18px;}
+  .detail-meta .cat{background:#eef2f8;color:var(--navy2);border-radius:4px;padding:2px 9px;}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0;
+    padding:10px 12px;background:#f7f9fc;border:1px solid var(--line);border-radius:8px;}
+  .toolbar .lbl{font-size:14px;color:#555;margin-right:2px;}
+  .fs-btn{background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px 12px;font-size:15px;color:var(--navy);}
+  .fs-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .article-body{font-family:var(--art-font);font-size:19px;line-height:2.0;color:#1f1f1f;
+    text-align:justify;}
+  .article-body[data-size="sm"]{font-size:17px;}
+  .article-body[data-size="lg"]{font-size:22px;line-height:2.1;}
+  .article-body p{margin:0 0 16px;text-indent:2em;}
+  .figure{text-align:center;margin:18px 0;}
+  .figure img{max-width:100%;border:1px solid var(--line);border-radius:6px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .figure .cap{font-size:14px;color:var(--muted);margin-top:6px;}
+  .detail-foot{margin-top:24px;padding-top:16px;border-top:2px solid var(--line);
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .pdf-link{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;
+    padding:12px 20px;border-radius:8px;font-size:16px;font-weight:700;}
+  .pdf-link:hover{background:var(--red2);}
+  .back-link{display:inline-block;margin:6px 0 14px;color:var(--navy2);font-size:15px;}
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:rgba(22,51,91,.95);
+    color:#fff;padding:12px 22px;border-radius:8px;font-size:16px;opacity:0;transition:opacity .25s;
+    pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;}
+  footer.foot{text-align:center;color:var(--muted);font-size:13px;padding:18px;}
+  .loading{text-align:center;color:var(--muted);padding:30px;}
+  @media (max-width:880px){
+    #body{flex-direction:column;}
+    #sidebar{width:100%;flex:none;position:static;margin:0 0 14px;}
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title"><span class="seal">◆</span><span id="appTitle">人工智能报道检索平台</span></div>
+    <div class="org" id="orgName"></div>
+  </header>
+
+  <div id="body">
+    <aside id="sidebar">
+      <div class="nav-title">栏目导航</div>
+      <div id="nav"></div>
+    </aside>
+
+    <main id="main">
+      <div class="searchbar">
+        <div class="search-row">
+          <input id="kw" class="kw" type="text" placeholder="请输入关键词，如：大模型 政务" />
+          <button class="btn" id="searchBtn">搜 索</button>
+          <button class="btn-ghost" id="resetBtn">重 置</button>
+        </div>
+        <div class="filters">
+          <label>来源
+            <select id="fSource"><option value="">全部</option></select>
+          </label>
+          <label>刊发日期
+            <input id="fFrom" type="date" /> 至 <input id="fTo" type="date" />
+          </label>
+          <span class="filter-tip">支持多个关键词（空格分隔，同时命中）</span>
+        </div>
+      </div>
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <footer class="foot">离线本地检索 · 数据仅存储于本机，不会上传任何网络</footer>
+  <div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+var CONFIG = null;
+var STATE = { keywords: [], source: "", from: "", to: "", category: "", subcategory: "" };
+
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+function $(id){ return document.getElementById(id); }
+
+function toast(msg){
+  var t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+}
+
+function api(path){
+  return fetch(path).then(function(r){ if(!r.ok) throw new Error("请求失败"); return r.json(); });
+}
+
+// ---------------- 初始化 ----------------
+function boot(){
+  api("/api/config").then(function(cfg){
+    CONFIG = cfg;
+    document.title = cfg.app_title || "人工智能报道检索平台";
+    $("appTitle").textContent = cfg.app_title || "人工智能报道检索平台";
+    $("orgName").textContent = cfg.org || "";
+    buildNav(cfg.categories || []);
+    buildSourceOptions(cfg.sources || []);
+    route();
+  }).catch(function(e){
+    $("view").innerHTML = '<div class="hint">初始化失败：' + esc(e.message) + '</div>';
+  });
+  window.addEventListener("hashchange", route);
+}
+
+// ---------------- 侧栏导航 ----------------
+function buildNav(categories){
+  var nav = $("nav"); nav.innerHTML = "";
+  categories.forEach(function(cat){
+    var wrap = document.createElement("div"); wrap.className = "cat";
+    var head = document.createElement("button"); head.className = "cat-head";
+    head.innerHTML = '<span>' + esc(cat.name) + '</span><span class="arrow">▶</span>';
+    var subs = document.createElement("div"); subs.className = "sub-list";
+    (cat.sub || []).forEach(function(sub){
+      var b = document.createElement("button"); b.className = "sub";
+      b.textContent = sub;
+      b.onclick = function(){ location.hash = "#/browse/" + encodeURIComponent(cat.name) + "/" + encodeURIComponent(sub); };
+      subs.appendChild(b);
+    });
+    head.onclick = function(){ wrap.classList.toggle("open"); };
+    wrap.appendChild(head); wrap.appendChild(subs);
+    nav.appendChild(wrap);
+  });
+}
+
+function buildSourceOptions(sources){
+  var sel = $("fSource");
+  sources.forEach(function(s){
+    var o = document.createElement("option"); o.value = s; o.textContent = s; sel.appendChild(o);
+  });
+}
+
+function setActiveSub(cat, sub){
+  var btns = document.querySelectorAll("#nav .sub");
+  btns.forEach(function(b){
+    var on = (b.textContent === sub);
+    b.classList.toggle("active", on);
+    if(on){ var catEl = b.closest(".cat"); if(catEl) catEl.classList.add("open"); }
+    else b.classList.remove("active");
+  });
+}
+
+// ---------------- 路由 ----------------
+function route(){
+  var h = location.hash.replace(/^#\/?/, "");
+  if(h.indexOf("article/") === 0){ return showArticle(decodeURIComponent(h.slice(8))); }
+  if(h.indexOf("search") === 0){
+    var q = new URLSearchParams(h.slice(h.indexOf("?")+1));
+    return showSearchResults(q);
+  }
+  if(h.indexOf("browse/") === 0){
+    var parts = h.slice(7).split("/");
+    return showBrowse(decodeURIComponent(parts[0]), decodeURIComponent(parts[1] || ""));
+  }
+  showHome();
+}
+
+function showHome(){
+  setActiveSub("", "");
+  $("view").innerHTML =
+    '<div class="card">' +
+    '<div class="section-title">欢迎使用</div>' +
+    '<p class="hint" style="padding:6px 0 0">本平台收录报纸人工智能主题报道，支持按栏目浏览与关键词检索。' +
+    '请在上方输入关键词并点击「搜索」；或从左侧栏目导航中逐级浏览。检索结果若为单篇，将直接展示全文。</p>' +
+    '</div>';
+}
+
+// ---------------- 浏览（栏目） ----------------
+function showBrowse(cat, sub){
+  setActiveSub(cat, sub);
+  STATE.category = cat; STATE.subcategory = sub;
+  var url = "/api/articles?category=" + encodeURIComponent(cat);
+  if(sub && sub !== "__all__") url += "&subcategory=" + encodeURIComponent(sub);
+  $("view").innerHTML = '<div class="loading">正在加载…</div>';
+  api(url).then(function(res){ renderList(res, cat + (sub && sub!=="__all__" ? " / " + sub : ""), false); });
+}
+
+// ---------------- 检索 ----------------
+function doSearch(){
+  var kw = $("kw").value.trim();
+  var source = $("fSource").value;
+  var from = $("fFrom").value;
+  var to = $("fTo").value;
+  var q = new URLSearchParams();
+  if(kw) q.set("q", kw);
+  if(source) q.set("source", source);
+  if(from) q.set("from", from);
+  if(to) q.set("to", to);
+  location.hash = "#/search?" + q.toString();
+}
+
+function showSearchResults(q){
+  setActiveSub("", "");
+  var kw = q.get("q") || "";
+  var source = q.get("source") || "";
+  var from = q.get("from") || "";
+  var to = q.get("to") || "";
+  STATE.keywords = kw.toLowerCase().split(/\s+/).filter(Boolean);
+  var url = "/api/search?q=" + encodeURIComponent(kw) +
+            "&source=" + encodeURIComponent(source) +
+            "&from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(to);
+  $("view").innerHTML = '<div class="loading">正在检索…</div>';
+  api(url).then(function(res){
+    // 命中单篇：直接展示正文
+    if(res.count === 1){ location.hash = "#/article/" + encodeURIComponent(res.items[0].id); return; }
+    var title = "检索结果";
+    if(kw) title = '检索 “' + esc(kw) + '”';
+    renderList(res, title, true);
+  }).catch(function(e){
+    $("view").innerHTML = '<div class="hint">检索出错：' + esc(e.message) + '</div>';
+  });
+}
+
+// ---------------- 列表渲染 ----------------
+function renderList(res, title, isSearch){
+  var items = res.items || [];
+  var html = '<div class="section-title">' + title + '（共 ' + res.count + ' 篇）</div>';
+  if(items.length === 0){
+    html += '<div class="hint">未找到相关报道，请调整关键词或筛选条件。</div>';
+    $("view").innerHTML = html; return;
+  }
+  items.forEach(function(it){
+    var snippet = makeSnippet(it.summary || it.title, STATE.keywords);
+    var tag = (it.category ? '<span class="tag">' + esc(it.category) + '</span>' : '') +
+              (it.subcategory ? '<span class="tag">' + esc(it.subcategory) + '</span>' : '');
+    html += '<button class="list-item" data-id="' + esc(it.id) + '">' +
+      '<div class="lt">' + hl(it.title, STATE.keywords) + '</div>' +
+      '<div class="lm">' + tag +
+        (it.source ? esc(it.source) : '') + (it.date ? '　' + esc(it.date) : '') + '</div>' +
+      '<div class="ls">' + snippet + '</div>' +
+      '</button>';
+  });
+  $("view").innerHTML = html;
+  Array.prototype.forEach.call(document.querySelectorAll(".list-item"), function(b){
+    b.onclick = function(){ location.hash = "#/article/" + encodeURIComponent(b.getAttribute("data-id")); };
+  });
+}
+
+function hl(text, kws){
+  var s = esc(text);
+  (kws || []).forEach(function(k){
+    if(!k) return;
+    try{ s = s.replace(new RegExp("(" + k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + ")","gi"), "<mark>$1</mark>"); }catch(e){}
+  });
+  return s;
+}
+
+function makeSnippet(text, kws){
+  text = (text || "").replace(/\s+/g, " ");
+  if(!text) return "";
+  var low = text.toLowerCase();
+  var pos = -1;
+  (kws || []).forEach(function(k){ if(pos<0 && k){ var i = low.indexOf(k); if(i>=0) pos = i; } });
+  if(pos < 0) pos = 0;
+  var start = Math.max(0, pos - 30);
+  var seg = (start>0 ? "…" : "") + text.slice(start, start + 90) + "…";
+  return hl(seg, kws);
+}
+
+// ---------------- 详情 ----------------
+function showArticle(id){
+  $("view").innerHTML = '<div class="loading">正在加载正文…</div>';
+  api("/api/article?id=" + encodeURIComponent(id)).then(function(a){
+    var meta = '<span class="cat">' + esc(a.category || "未分类") +
+      (a.subcategory ? " / " + esc(a.subcategory) : "") + '</span>' +
+      (a.source ? '<span>来源：' + esc(a.source) + '</span>' : '') +
+      (a.date ? '<span>刊发日期：' + esc(a.date) + '</span>' : '') +
+      (a.author ? '<span>作者：' + esc(a.author) + '</span>' : '');
+    var paras = (a.body || "").split(/\n{2,}/).map(function(p){ return p.trim(); }).filter(Boolean)
+      .map(function(p){ return "<p>" + esc(p).replace(/\n/g,"<br/>") + "</p>"; }).join("");
+    var figs = "";
+    (a.image_urls || []).forEach(function(u){
+      figs += '<div class="figure"><img src="' + esc(u) + '" alt="配图" /><div class="cap">配图</div></div>';
+    });
+    var pdf = a.pdf_url ? '<a class="pdf-link" href="' + esc(a.pdf_url) +
+      '" download target="_blank">⬇ 下载原始 PDF</a>' : '';
+    var html =
+      '<a class="back-link" href="javascript:history.back()">← 返回列表</a>' +
+      '<div class="card">' +
+        '<div class="detail-head"><h1 class="detail-title">' + esc(a.title) + '</h1>' +
+          '<div class="detail-meta">' + meta + '</div></div>' +
+        '<div class="toolbar">' +
+          '<span class="lbl">字号：</span>' +
+          '<button class="fs-btn" data-fs="sm">小</button>' +
+          '<button class="fs-btn active" data-fs="md">中</button>' +
+          '<button class="fs-btn" data-fs="lg">大</button>' +
+          '<button class="btn-ghost" id="copyBtn" style="margin-left:auto">一键复制全文</button>' +
+        '</div>' +
+        '<div class="article-body" id="articleBody" data-size="md">' + paras + figs + '</div>' +
+        '<div class="detail-foot">' + pdf +
+          '<span class="hint" style="padding:0">（如需保存原文，请点击左侧按钮下载 PDF）</span>' +
+        '</div>' +
+      '</div>';
+    $("view").innerHTML = html;
+    // 字号
+    Array.prototype.forEach.call(document.querySelectorAll(".fs-btn"), function(b){
+      b.onclick = function(){
+        $("articleBody").setAttribute("data-size", b.getAttribute("data-fs"));
+        document.querySelectorAll(".fs-btn").forEach(function(x){ x.classList.remove("active"); });
+        b.classList.add("active");
+      };
+    });
+    $("copyBtn").onclick = function(){ copyArticle(a); };
+    window.scrollTo(0, 0);
+  }).catch(function(e){
+    $("view").innerHTML = '<div class="hint">加载失败：' + esc(e.message) + '</div>';
+  });
+}
+
+function copyArticle(a){
+  var lines = [];
+  lines.push(a.title || "");
+  lines.push("");
+  lines.push([a.source, a.date, a.author].filter(Boolean).join("　"));
+  if(a.category) lines.push("分类：" + a.category + (a.subcategory ? " / " + a.subcategory : ""));
+  lines.push("");
+  lines.push((a.body || "").trim());
+  if(a.pdf_url) lines.push("\n（附：原始 PDF 文件）");
+  var text = lines.join("\n");
+  function done(){ toast("全文已复制到剪贴板"); }
+  function fail(){ toast("复制失败，请手动选择文本"); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text, done, fail); });
+  } else { fallbackCopy(text, done, fail); }
+}
+function fallbackCopy(text, done, fail){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    var ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    ok ? done() : fail();
+  }catch(e){ fail(); }
+}
+
+// ---------------- 事件绑定 ----------------
+$("searchBtn").onclick = doSearch;
+$("kw").addEventListener("keydown", function(e){ if(e.key === "Enter") doSearch(); });
+$("resetBtn").onclick = function(){
+  $("kw").value=""; $("fSource").value=""; $("fFrom").value=""; $("fTo").value="";
+  STATE = { keywords:[], source:"", from:"", to:"", category:"", subcategory:"" };
+  setActiveSub("",""); location.hash = "#/home";
+};
+
+boot();
+</script>
+</body>
+</html>

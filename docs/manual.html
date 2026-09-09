@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>人工智能报道检索平台 · 操作使用手册</title>
+<style>
+  :root{ --navy:#16335b; --red:#9e1b1b; --ink:#222; --muted:#666; --line:#dfe4ec; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:#fff; color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;
+    font-size:15px; line-height:1.75; }
+  .cover{ background:linear-gradient(160deg,var(--navy),#1d447f); color:#fff;
+    padding:54px 48px; }
+  .cover .seal{ color:#e9c46a; font-size:30px; }
+  .cover h1{ font-size:30px; margin:14px 0 6px; letter-spacing:2px; }
+  .cover .sub{ opacity:.9; font-size:15px; }
+  .wrap{ max-width:880px; margin:0 auto; padding:36px 48px 60px; }
+  h2{ color:var(--navy); font-size:21px; margin:34px 0 12px; padding-left:12px;
+    border-left:5px solid var(--red); }
+  h3{ color:#1d447f; font-size:17px; margin:22px 0 8px; }
+  p{ margin:8px 0; }
+  .tip{ background:#f7f9fc; border:1px solid var(--line); border-left:4px solid var(--navy);
+    padding:10px 14px; border-radius:6px; margin:12px 0; font-size:14px; color:#444; }
+  table{ border-collapse:collapse; width:100%; margin:12px 0; font-size:14px; }
+  th,td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+  th{ background:#eef2f8; color:var(--navy); }
+  code{ background:#f1f3f7; border:1px solid var(--line); border-radius:4px;
+    padding:1px 6px; font-family:"Consolas","Microsoft YaHei",monospace; font-size:13px; }
+  pre{ background:#1e293b; color:#e2e8f0; padding:14px 16px; border-radius:8px;
+    overflow:auto; font-size:13px; line-height:1.6; }
+  pre code{ background:none; border:none; color:inherit; padding:0; }
+  ol,ul{ padding-left:22px; } li{ margin:5px 0; }
+  .foot{ text-align:center; color:var(--muted); font-size:13px; margin-top:40px;
+    padding-top:16px; border-top:1px solid var(--line); }
+  @media print{ .cover{ -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="seal">◆</div>
+  <h1>人工智能报道检索平台</h1>
+  <div class="sub">操作使用手册 · 离线本地检索工具 · 仅供内部使用</div>
+</div>
+
+<div class="wrap">
+
+  <h2>一、产品简介</h2>
+  <p>本平台用于检索报纸刊发的人工智能主题报道，面向日常查阅与领导阅研。全部数据存放于本机，程序离线运行，无需联网。</p>
+  <p><b>核心能力：</b></p>
+  <ul>
+    <li><b>栏目浏览</b>：首页依据外部配置文件，呈现「7 个一级大类 → 二级子类」两层目录，点击即可逐级浏览。</li>
+    <li><b>关键词检索</b>：支持全文检索，多个关键词以空格分隔时「同时命中」。</li>
+    <li><b>来源 / 日期筛选</b>：可按报刊来源、刊发日期区间过滤。</li>
+    <li><b>单篇直显</b>：检索结果若仅命中一篇，直接展示正文与配图。</li>
+    <li><b>详情工具</b>：正文底部提供「原始 PDF 下载」；支持「字号调节」与「一键复制全文」。</li>
+  </ul>
+  <div class="tip">程序启动时<b>自动扫描</b>数据目录下的全部文章文件，新增文章放入目录、重新打开程序即可，无需重新编译。</div>
+
+  <h2>二、运行环境</h2>
+  <ul>
+    <li>操作系统：<b>Windows 10 及以上</b>（64 位）。</li>
+    <li>运行依赖：本机已安装 <b>Microsoft Edge</b>（WebView2 运行时会随 Win10 自带），用于呈现界面。</li>
+    <li>网络要求：<b>完全离线</b>，不访问互联网。</li>
+  </ul>
+
+  <h2>三、快速开始</h2>
+  <ol>
+    <li>将交付文件夹（含 <code>AI报纸检索.exe</code>、<code>config.json</code>、<code>data\</code> 等）整体复制到任意位置（如 <code>D:\AI检索\</code>）。</li>
+    <li><b>双击 <code>AI报纸检索.exe</code></b>。</li>
+    <li>程序自动启动并在默认浏览器中打开检索页面；同时弹出「运行中」小窗口，显示访问地址与「退出」按钮。</li>
+    <li>在浏览器中使用即可。关闭时点击小窗口的「退出」。</li>
+  </ol>
+  <div class="tip">若浏览器未自动打开，可手动打开浏览器，访问小窗口中显示的地址（通常为 <code>http://127.0.0.1:8765/</code>）。</div>
+
+  <h2>四、界面与操作</h2>
+
+  <h3>1. 栏目浏览</h3>
+  <p>页面左侧为「栏目导航」，列出 7 个一级大类。点击大类名称可展开其下的二级子类；点击子类，主区域列出该栏目下的全部文章；点击文章条目进入详情页。</p>
+
+  <h3>2. 关键词检索</h3>
+  <p>在页面顶部检索框输入关键词，点击「搜索」。支持<b>多个关键词</b>：以空格分隔，例如 <code>大模型 政务</code>，表示两词需同时出现在同一篇文章中。</p>
+  <ul>
+    <li><b>仅命中 1 篇</b> → 直接展示该篇正文与配图。</li>
+    <li><b>命中多篇</b> → 以目录列表展示，点击任一条目查看详情。</li>
+    <li><b>无结果</b> → 提示调整关键词或筛选条件。</li>
+  </ul>
+
+  <h3>3. 来源与日期筛选</h3>
+  <p>「来源」下拉框列出全部报刊来源；「刊发日期」可选择起、止日期。筛选可与关键词组合使用。</p>
+
+  <h3>4. 文章详情页</h3>
+  <ul>
+    <li><b>正文与配图</b>：正文按段落排版，配图居中展示。</li>
+    <li><b>字号调节</b>：点击工具栏「小 / 中 / 大」切换正文字号。</li>
+    <li><b>一键复制全文</b>：将标题、来源、日期、作者与正文一并复制到剪贴板，可直接粘贴到文档或微信。</li>
+    <li><b>下载原始 PDF</b>：正文底部「下载原始 PDF」按钮，保存该篇报纸的原始版面文件。</li>
+    <li><b>返回</b>：点击「← 返回列表」回到上一级。</li>
+  </ul>
+
+  <h2>五、如何新增文章</h2>
+  <p>无需改动程序，把文章文件放入数据目录 <code>data\</code>，重新打开程序即可自动加载。</p>
+
+  <h3>1. 文章文件（JSON）</h3>
+  <p>每篇文章对应一个 <code>.json</code> 文件，放入 <code>data\</code> 目录（可直接放，也可建子文件夹）。字段说明：</p>
+  <table>
+    <tr><th>字段</th><th>必填</th><th>说明</th></tr>
+    <tr><td><code>title</code></td><td>是</td><td>文章标题</td></tr>
+    <tr><td><code>body</code></td><td>是</td><td>正文（纯文本）。连续两个换行视为分段；单个换行转为换行符</td></tr>
+    <tr><td><code>source</code></td><td>否</td><td>报刊来源，用于「来源」筛选</td></tr>
+    <tr><td><code>date</code></td><td>否</td><td>刊发日期 <code>YYYY-MM-DD</code>，用于日期筛选与排序</td></tr>
+    <tr><td><code>category</code></td><td>否</td><td>一级分类，名称须与 <code>config.json</code> 中某大类<b>完全一致</b></td></tr>
+    <tr><td><code>subcategory</code></td><td>否</td><td>二级分类，名称须与对应大类下的某子类<b>完全一致</b></td></tr>
+    <tr><td><code>author</code></td><td>否</td><td>作者</td></tr>
+    <tr><td><code>summary</code></td><td>否</td><td>内容提要，列表页展示摘要</td></tr>
+    <tr><td><code>image</code></td><td>否</td><td>配图相对路径，如 <code>img/20240101.jpg</code>；可填字符串或数组</td></tr>
+    <tr><td><code>pdf</code></td><td>否</td><td>原始 PDF 相对路径，如 <code>pdf/20240101.pdf</code></td></tr>
+    <tr><td><code>id</code></td><td>否</td><td>文章唯一标识；缺省时自动取文件名（去扩展名）</td></tr>
+  </table>
+  <pre><code>{
+  "title": "人工智能赋能千行百业",
+  "source": "人民日报",
+  "date": "2024-01-01",
+  "category": "产业应用",
+  "subcategory": "智能制造",
+  "author": "本报记者",
+  "summary": "人工智能与制造业深度融合，催生新业态。",
+  "body": "第一段内容……\n\n第二段内容……\n\n第三段内容……",
+  "image": "img/20240101.jpg",
+  "pdf": "pdf/20240101.pdf"
+}</code></pre>
+
+  <h3>2. 配图与 PDF 文件</h3>
+  <ul>
+    <li>将图片放入 <code>data\img\</code>，PDF 放入 <code>data\pdf\</code>。</li>
+    <li>在 JSON 中以<b>相对 data 目录</b>的路径填写，例如 <code>"image": "img/20240101.jpg"</code>。</li>
+    <li>未配置 <code>image</code> / <code>pdf</code> 的文章，详情页不显示对应内容，不影响检索。</li>
+  </ul>
+
+  <h3>3. 生效方式</h3>
+  <p>新增或替换文件后，<b>关闭并重新打开</b> <code>AI报纸检索.exe</code> 即可（程序启动时自动扫描加载）。</p>
+
+  <h2>六、配置文件说明（config.json）</h2>
+  <p><code>config.json</code> 与 <code>exe</code> 同目录，用于定义首页两层导航结构与标题。</p>
+  <ul>
+    <li><code>app_title</code>：页面标题。</li>
+    <li><code>org</code>：单位名称（右上角显示）。</li>
+    <li><code>categories</code>：一级大类数组，每项含 <code>name</code>（大类名）与 <code>sub</code>（二级子类名数组）。</li>
+  </ul>
+  <div class="tip">修改分类时直接编辑 <code>config.json</code> 中的名称（增删大类 / 子类同理）。文章的 <code>category</code> / <code>subcategory</code> 字段必须与此处名称<b>完全一致</b>（含字与空格），否则文章不归入对应栏目。</div>
+  <pre><code>{
+  "app_title": "人工智能报道检索平台",
+  "org": "××单位 · 内部资料检索",
+  "categories": [
+    {"name": "政策解读", "sub": ["国家战略", "规划文件", "地方实践"]},
+    {"name": "技术创新", "sub": ["大模型", "算力芯片", "前沿算法"]}
+  ]
+}</code></pre>
+
+  <h2>七、退出程序</h2>
+  <p>点击「运行中」小窗口的「退出」按钮，在确认框点击「确定」即可完全关闭。</p>
+
+  <h2>八、故障排查</h2>
+  <table>
+    <tr><th>现象</th><th>可能原因 / 处理</th></tr>
+    <tr><td>双击无反应</td><td>确认 Windows 10 64 位；右键「以管理员身份运行」；检查杀毒软件是否拦截</td></tr>
+    <tr><td>浏览器白屏</td><td>确认 <code>config.json</code> 与 <code>data\</code> 与 exe 同目录；查看小窗口地址是否正确</td></tr>
+    <tr><td>端口被占用</td><td>另一实例已在运行，先退出旧实例；或重启电脑后重试</td></tr>
+    <tr><td>某篇不显示配图</td><td>检查 JSON 中 <code>image</code> 路径与图片文件是否确实存在于 <code>data\img\</code></td></tr>
+    <tr><td>新增文章未出现</td><td>确认为 <code>.json</code>、含 <code>title</code> 与 <code>body</code>；确认已重新打开程序</td></tr>
+    <tr><td>PDF 无法下载</td><td>确认 <code>pdf</code> 路径与文件存在；浏览器可能拦截，请允许下载</td></tr>
+  </table>
+
+  <h2>九、交付物清单</h2>
+  <ul>
+    <li><code>AI报纸检索.exe</code> —— 独立可执行程序（双击运行，无需安装）。</li>
+    <li><code>config.json</code> —— 导航与标题配置文件（可手动维护）。</li>
+    <li><code>data\</code> —— 文章数据目录（含 <code>img\</code>、<code>pdf\</code>），随用随增。</li>
+    <li><code>docs\</code> —— 本使用手册。</li>
+    <li><code>src\</code> —— 完整源代码（详见 <code>README.md</code>）。</li>
+  </ul>
+
+  <div class="foot">本手册所述功能均以实际交付版本为准。</div>
+</div>
+</body>
+</html>
