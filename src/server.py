@@ -450,8 +450,33 @@ class Handler(BaseHTTPRequestHandler):
 _server = None
 
 
-def run_server(host="127.0.0.1", start_port=8765):
+def get_bind():
+    """读取 config.json 的 server 节(服务器部署用),默认 0.0.0.0:8765。"""
+    host, port = "0.0.0.0", 8765
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            user = json.load(f)
+        srv = user.get("server") or {}
+        host = str(srv.get("host") or host).strip() or host
+        p = int(srv.get("port") or port)
+        if 1 <= p <= 65535:
+            port = p
+    except Exception:
+        pass
+    return host, port
+
+
+def run_server(host=None, start_port=None, strict=False):
+    """启动服务。
+    - host/start_port 为 None 时读取 config.json 的 server 节;
+    - strict=True(服务器部署):端口被占用直接抛错,便于运维发现配置冲突;
+    - strict=False(桌面单机):端口被占用时自动向后寻找可用端口。
+    """
     global _server
+    if host is None or start_port is None:
+        cfg_host, cfg_port = get_bind()
+        host = host or cfg_host
+        start_port = start_port if start_port is not None else cfg_port
     scan_articles()
     port = start_port
     while True:
@@ -459,6 +484,8 @@ def run_server(host="127.0.0.1", start_port=8765):
             s = ThreadingHTTPServer((host, port), Handler)
             break
         except OSError:
+            if strict:
+                raise RuntimeError("端口 %d 已被占用(服务器模式为固定端口,请检查配置或占用进程)" % port)
             port += 1
             if port > start_port + 200:
                 raise RuntimeError("无可用的本地端口")
@@ -478,8 +505,9 @@ def stop_server():
 
 
 if __name__ == "__main__":
-    p = run_server()
-    print("服务已启动: http://127.0.0.1:%d/" % p)
+    host, port = get_bind()
+    p = run_server(host, port, strict=True)
+    print("服务已启动: http://%s:%d/" % ("127.0.0.1" if host == "0.0.0.0" else host, p))
     try:
         import time as _t
         while True:

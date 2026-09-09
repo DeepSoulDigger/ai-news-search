@@ -1,0 +1,16 @@
+services:
+  ai-news-search:
+    build: .
+    image: ai-news-search:latest
+    container_name: ai-news-search
+    restart: unless-stopped
+    ports:
+      - "8765:8765"          # 左侧为宿主机端口,按需修改;容器内端口见 config.json server.port
+    volumes:
+      - ./data:/app/data      # 文章数据:宿主机维护,新增 JSON/PDF 放入即自动生效(约2秒)
+      - ./config.json:/app/config.json:ro   # 标题/单位/分类/端口配置
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

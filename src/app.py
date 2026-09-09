@@ -65,7 +65,8 @@ def show_window(port):
 
 def main():
     try:
-        port = run_server()
+        # 桌面单机形态:固定回环地址,端口被占用时自动向后寻找
+        port = run_server(host="127.0.0.1")
     except Exception as e:
         sys.stderr.write("服务启动出错：%s\n" % e)
         return

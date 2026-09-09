@@ -1,0 +1,41 @@
+# nginx 反向代理示例(人工智能报道检索平台)
+# 用法:复制为站点配置后按需修改 server_name,然后 nginx -s reload
+# 以下以 80 端口内网 HTTP 为例;如需 HTTPS,由运维统一接入证书(见文末注释)
+
+server {
+    listen 80;
+    server_name news.internal.example.com;   # 改为内网域名或服务器IP
+
+    # 上传/请求体基本限制(本平台无上传,取保守值)
+    client_max_body_size 8m;
+
+    # 基础安全头(服务端已自带 nosniff 等,此处补充传输层策略)
+    add_header X-Content-Type-Options nosniff always;
+
+    location / {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # PDF 在线阅读需要的时间与缓冲
+        proxy_read_timeout 120s;
+        proxy_buffering off;
+    }
+
+    # 静态资源(PDF/图片)可加缓存,减轻后端读取
+    location /data/ {
+        proxy_pass http://127.0.0.1:8765;
+        proxy_read_timeout 120s;
+        expires 1h;
+        add_header Cache-Control "public";
+    }
+}
+
+# ── HTTPS 提示(由运维按单位规范接入) ────────────────────
+# listen 443 ssl;
+# ssl_certificate     /etc/nginx/ssl/internal.crt;
+# ssl_certificate_key /etc/nginx/ssl/internal.key;
+# 并将 80 端口做 301 跳转到 https。

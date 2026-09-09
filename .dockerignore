@@ -1,0 +1,9 @@
+# .git
+.git
+.gitignore
+verify/
+交付/
+docs/
+tools/
+*.md
+docker-compose.yml
